@@ -1,0 +1,11 @@
+hypernym	36047
+derivationally_related_form	30789
+member_holonym	7660
+has_part	4988
+synset_domain_topic_of	3230
+instance_hypernym	3043
+also_see	1355
+verb_group	1177
+member_of_domain_region	949
+member_of_domain_usage	653
+similar_to	83

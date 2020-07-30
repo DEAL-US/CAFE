@@ -1,0 +1,9 @@
+has_instance	35361
+type_of	29831
+member_meronym	9054
+part_of	6527
+has_part	6067
+domain_region	4210
+subordinate_instance_of	3727
+similar_to	1564
+domain_topic	1089

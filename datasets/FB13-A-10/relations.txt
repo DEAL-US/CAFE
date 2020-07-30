@@ -1,0 +1,13 @@
+gender	59423
+nationality	47581
+profession	45931
+place_of_death	30435
+place_of_birth	28478
+location	21588
+institution	15566
+cause_of_death	10817
+religion	8112
+parents	4701
+ethnicity	4698
+children	4531
+spouse	3348

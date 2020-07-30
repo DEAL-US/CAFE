@@ -1,0 +1,9 @@
+concept_citylocatedinstate	1695
+concept_writerwrotebook	1468
+concept_athleteplaysforteam	1077
+concept_teamplaysinleague	920
+concept_journalistwritesforpublication	916
+concept_riverflowsthroughcity	797
+concept_actorstarredinmovie	430
+concept_stadiumlocatedincity	341
+concept_sportsteampositionathlete	219
