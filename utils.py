@@ -6,6 +6,7 @@ from glob       import glob
 from os         import remove, replace
 from subprocess import run
 from settings   import PATH_RELS, DATASET
+from os.path    import isfile
 
 # Counts the number of lines in a file in a quickly manner
 def count_file_lines(path):
@@ -56,7 +57,17 @@ def join_files(joint_file, pattern):
         relations = [x.strip().split("\t")[0] for x in f.readlines()]
 
     from features import get_header
-    header = ";".join(get_header(relations))
+
+    rels_to_study = None
+    rels_study_path = f"datasets/{DATASET}/relations_to_study.txt"
+    if isfile(rels_study_path):
+        rels_to_study = []
+        with open(rels_study_path, "r") as f:
+            for line in f:
+                if line:
+                    rels_to_study.append(line.strip().split("\t")[0])
+
+    header = ";".join(get_header(relations, rels_to_study))
     file.write(header + "\n")
 
     for part_file in glob(pattern):
@@ -92,7 +103,7 @@ def get_paths(triples, source, target, length):
 # Note that the features to be filtered are selected using the training csv,
 # but they are deleted from both
 def filter_features(train_path, test_path):
-    inds_same = []
+    inds_same = None
     first_line = []
 
     with open(train_path, "r") as f:
@@ -100,7 +111,7 @@ def filter_features(train_path, test_path):
             if i == 0: continue  # Skip the header
             spl = line.strip().split(";")
 
-            if not inds_same:
+            if inds_same is None:
                 inds_same = [i for i in range(len(spl))]
                 first_line = spl
             else:

@@ -1,15 +1,29 @@
 from tqdm               import tqdm
 from networkx.exception import NodeNotFound
 
-from settings           import N_THREADS, DIRECTIONAL_GRAPH, DATASET, PATH_TRAIN, PATH_TEST, PATH_RELS
+from settings           import N_THREADS, DIRECTIONAL_GRAPH, DATASET, PATH_TRAIN, PATH_TEST, PATH_RELS, MAX_CONTEXT_SIZE
 from features           import get_feature_vector
 from utils              import count_file_lines, generate_negatives
 
-from os.path            import isfile
+from os.path import isfile
+import time
 
 import networkx as nx
+from networkx.algorithms.centrality     import degree_centrality
 
 def worker(nproc):
+
+    def _print(*args, **kwargs):
+        # Avoid printing the same stuff multiple times
+        if nproc == 0:
+            print(*args, **kwargs)
+
+    def _regular_iterator(ls):
+        for l in ls:
+            yield l
+    
+    iterator = tqdm if nproc == 0 else _regular_iterator
+
     graph = nx.MultiDiGraph() if DIRECTIONAL_GRAPH else nx.MultiGraph()
     possible_targets = {}
     positive_train_triples = []
@@ -34,7 +48,7 @@ def worker(nproc):
                     rels_to_study.append(line.strip().split("\t")[0])
 
     # Load the data from the training split
-    print("Loading training data")
+    _print("Loading training data")
     with open(PATH_TRAIN, "r") as f:
         for i, line in enumerate(f):
             spl = line.strip().split("\t")
@@ -51,7 +65,7 @@ def worker(nproc):
             if start_range_train <= i < end_range_train and (rels_to_study is None or r in rels_to_study):
                 positive_train_triples.append((s, r, t))
 
-    print("Removing duplicate targets")
+    _print("Removing duplicate targets")
     # Remove duplicates from the possible targets dict
     for r, ls in possible_targets.items():
         possible_targets[r] = list(set(ls))
@@ -61,21 +75,27 @@ def worker(nproc):
 
     # Generate the negatives by replacing the target entity with a random one
     # from the same range
-    print("Generating negatives")
+    _print("Generating negatives")
     negative_train_triples = generate_negatives(positive_train_triples, possible_targets)
-    labelled_triples_train = [((s, r, t, 1), None) for s, r, t in positive_train_triples] + \
-                             [(neg, orig) for neg, orig in negative_train_triples]
+    labelled_triples_train = [((s, r, t, 1), None) for s, r, t in positive_train_triples] + negative_train_triples
 
-    print("Computing features for the training split")
+    _print("Computing features for the training split")
     training_csv = open(f"output/{DATASET}/train.csv.{nproc}", "a")
 
-    for (s, r, t, label), orig in tqdm(labelled_triples_train):
-        fvec = get_feature_vector(graph, (s, r, t), relations, bool(label), orig)
+    centrality_indices = degree_centrality(graph)
+
+    if not rels_to_study:
+        rels_to_study = relations
+
+    t1 = time.thread_time()
+    for (s, r, t, label), orig in iterator(labelled_triples_train):
+        fvec = get_feature_vector(graph, (s, r, t), relations, bool(label), orig,            centrality_indices=centrality_indices, rels_to_study=rels_to_study)
         training_csv.write(f"{s},{r},{t};{label};{';'.join(str(x) for x in fvec)}\n")
 
+    t2 = time.thread_time()
     training_csv.close()
 
-    print("Loading testing data")
+    _print("Loading testing data")
     labelled_triples_test = []
     with open(PATH_TEST, "r") as f:
         for i, line in enumerate(f):
@@ -85,12 +105,14 @@ def worker(nproc):
                 if rels_to_study is None or r in rels_to_study:
                     labelled_triples_test.append((s, r, t, 1 if lbl == "1" else 0))
 
-    print("Computing features for the testing split")
+    _print("Computing features for the testing split")
     testing_csv = open(f"output/{DATASET}/test.csv.{nproc}", "a")
 
-    for s, r, t, label in tqdm(labelled_triples_test):
+    t3 = time.thread_time()
+    for s, r, t, label in iterator(labelled_triples_test):
         try:
-            fvec = get_feature_vector(graph, (s, r, t), relations)
+            fvec = get_feature_vector(graph, (s, r, t), relations,
+                centrality_indices=centrality_indices, rels_to_study=rels_to_study)
         except NodeNotFound:
             # Since the testing data does not appear in the training split,
             # an entity present in the testing split may not appear in the
@@ -98,4 +120,10 @@ def worker(nproc):
             continue
         testing_csv.write(f"{s},{r},{t};{label};{';'.join(str(x) for x in fvec)}\n")
 
+    t4 = time.thread_time()
     testing_csv.close()
+
+    elapsed_seconds = (t2 - t1) + (t4 - t3)
+
+    with open("compute_times.txt", "a") as f:
+        f.write(f"{DATASET};c{MAX_CONTEXT_SIZE};thread{nproc};{elapsed_seconds}\n")
