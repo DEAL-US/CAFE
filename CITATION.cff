@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you find CAFE useful, please consider citing it as below:"
+authors:
+- family-names: "Borrego"
+  given-names: "Agustín"
+  orcid: "https://orcid.org/0000-0003-3750-8484"
+- family-names: "Ayala"
+  given-names: "Daniel"
+  orcid: "https://orcid.org/0000-0003-2095-1009"
+- family-names: "Hernández"
+  given-names: "Inma"
+  orcid: "https://orcid.org/0000-0001-8920-6635"
+- family-names: "Rivero"
+  given-names: "Carlos R"
+  orcid: "https://orcid.org/0000-0002-5770-950X"
+- family-names: "Ruiz"
+  given-names: "David"
+  orcid: "https://orcid.org/0000-0003-4460-5493"
+title: "CAFE: Knowledge graph completion using neighborhood-aware features"
+doi: 10.1016/j.engappai.2021.104302
+date-released: 2021-05-18
+url: "https://github.com/github/linguist"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Borrego"
+    given-names: "Agustín"
+    orcid: "https://orcid.org/0000-0003-3750-8484"
+  - family-names: "Ayala"
+    given-names: "Daniel"
+    orcid: "https://orcid.org/0000-0003-2095-1009"
+  - family-names: "Hernández"
+    given-names: "Inma"
+    orcid: "https://orcid.org/0000-0001-8920-6635"
+  - family-names: "Rivero"
+    given-names: "Carlos R"
+    orcid: "https://orcid.org/0000-0002-5770-950X"
+  - family-names: "Ruiz"
+    given-names: "David"
+  orcid: "https://orcid.org/0000-0003-4460-5493"
+  doi: "10.1016/j.engappai.2021.104302"
+  journal: "Engineering Applications of Artificial Intelligence"
+  title: "CAFE: Knowledge graph completion using neighborhood-aware features"
+  volume: 103
+  year: 2021
